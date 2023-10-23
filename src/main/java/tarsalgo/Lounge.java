@@ -69,17 +69,10 @@ public class Lounge {
         int counter = 0;
         int max = 0;
         LocalTime time = null;
-        for (PersonMove personMove : personMoveList) {
-            if (personMove.direction() == Direction.IN) counter++;
-            if (personMove.direction() == Direction.OUT) counter--;
-
-            if (counter > max) {
-                max = counter;
-                time = personMove.time();
-            }
-        }
+        time = getLocalTime(counter, max, time);
         return time;
     }
+
 
     public void printMostInLoungeTime() {
         System.out.printf("Például %tR-kor voltak a legtöbben a társalgóban. ", getMostInLoungeTime());
@@ -98,17 +91,35 @@ public class Lounge {
                 line = line.concat("15:00");
                 inLongue = true;
             }
-            String[] times = line.split("-");
-            String[] startArray = times[0].split(":");
-            String[] endArray = times[1].split(":");
-            LocalTime start = LocalTime.of(Integer.parseInt(startArray[0]), Integer.parseInt(startArray[1]));
-            LocalTime end = LocalTime.of(Integer.parseInt(endArray[0]), Integer.parseInt(endArray[1]));
-            minutes += (int) start.until(end, ChronoUnit.MINUTES);
+            minutes = getMinutes(line, minutes);
         }
 
         String isIn = inLongue ? "" : "nem ";
 
         System.out.printf("A(z) %d. személy összesen %d percet volt bent, a megfigyelés végén %sa társalgóban volt.", id, minutes, isIn);
+    }
+
+    private LocalTime getLocalTime(int counter, int max, LocalTime time) {
+        for (PersonMove personMove : personMoveList) {
+            if (personMove.direction() == Direction.IN) counter++;
+            if (personMove.direction() == Direction.OUT) counter--;
+
+            if (counter > max) {
+                max = counter;
+                time = personMove.time();
+            }
+        }
+        return time;
+    }
+
+    private static int getMinutes(String line, int minutes) {
+        String[] times = line.split("-");
+        String[] startArray = times[0].split(":");
+        String[] endArray = times[1].split(":");
+        LocalTime start = LocalTime.of(Integer.parseInt(startArray[0]), Integer.parseInt(startArray[1]));
+        LocalTime end = LocalTime.of(Integer.parseInt(endArray[0]), Integer.parseInt(endArray[1]));
+        minutes += (int) start.until(end, ChronoUnit.MINUTES);
+        return minutes;
     }
 
     private String getInLoungeById(int id) {
